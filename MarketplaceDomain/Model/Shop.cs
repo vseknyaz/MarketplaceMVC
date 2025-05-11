@@ -11,7 +11,7 @@ public partial class Shop
     [StringLength(100, ErrorMessage = "Назва не може бути довшою за 100 символів")]
     public string ShopName { get; set; } = null!;
     [Required(ErrorMessage = "Адреса обов'язкова")]
-    [StringLength(200, ErrorMessage = "Адреса не може бути довшою за 200 символів")
+    [StringLength(200, ErrorMessage = "Адреса не може бути довшою за 200 символів")]
     public string Address { get; set; }
 
     public string? Email { get; set; }

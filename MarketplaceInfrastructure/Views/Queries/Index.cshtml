@@ -1,0 +1,161 @@
+﻿@{
+    ViewData["Title"] = "Запити";
+}
+
+<h1>Запити</h1>
+
+<!-- Форма для Query1 -->
+<h3>Адреси магазинів із товарами дорожче X</h3>
+<form asp-action="Query1" method="post">
+    <label for="price">Введіть ціну:</label>
+    <input type="number" id="price" name="price" step="0.01" required />
+    <button type="submit">Виконати</button>
+</form>
+@if (ViewBag.Query1Result != null)
+{
+    <h4>Результати для ціни > @ViewBag.Query1Price</h4>
+    <ul>
+        @foreach (var address in ViewBag.Query1Result)
+        {
+            <li>@address</li>
+        }
+    </ul>
+}
+
+<!-- Форма для Query2 -->
+<h3>Клієнти, які зробили замовлення після дати X</h3>
+<form asp-action="Query2" method="post">
+    <label for="date">Введіть дату (yyyy-mm-dd):</label>
+    <input type="date" id="date" name="date" required />
+    <button type="submit">Виконати</button>
+</form>
+@if (ViewBag.Query2Result != null)
+{
+    <h4>Результати для замовлень після @ViewBag.Query2Date</h4>
+    <ul>
+        @foreach (var client in ViewBag.Query2Result)
+        {
+            <li>@client</li>
+        }
+    </ul>
+}
+
+<!-- Форма для Query3 -->
+<h3>Товари з категорії X</h3>
+<form asp-action="Query3" method="post">
+    <label for="categoryName">Введіть назву категорії:</label>
+    <input type="text" id="categoryName" name="categoryName" required />
+    <button type="submit">Виконати</button>
+</form>
+@if (ViewBag.Query3Result != null)
+{
+    <h4>Результати для категорії @ViewBag.Query3CategoryName</h4>
+    <ul>
+        @foreach (var product in ViewBag.Query3Result)
+        {
+            <li>@product</li>
+        }
+    </ul>
+}
+
+<!-- Форма для Query4 -->
+<h3>Замовлення з кількістю товарів більше X</h3>
+<form asp-action="Query4" method="post">
+    <label for="quantity">Введіть кількість:</label>
+    <input type="number" id="quantity" name="quantity" required />
+    <button type="submit">Виконати</button>
+</form>
+@if (ViewBag.Query4Result != null)
+{
+    <h4>Результати для кількості > @ViewBag.Query4Quantity</h4>
+    <table>
+        <tr>
+            <th>OrderId</th>
+            <th>TotalQuantity</th>
+        </tr>
+        @foreach (var order in ViewBag.Query4Result)
+        {
+            <tr>
+                <td>@order.OrderId</td>
+                <td>@order.TotalQuantity</td>
+            </tr>
+        }
+    </table>
+}
+
+<!-- Форма для Query5 -->
+<h3>Магазини з товарами на складі менше X</h3>
+<form asp-action="Query5" method="post">
+    <label for="stock">Введіть запас:</label>
+    <input type="number" id="stock" name="stock" required />
+    <button type="submit">Виконати</button>
+</form>
+@if (ViewBag.Query5Result != null)
+{
+    <h4>Результати для запасу @ViewBag.Query5Stock</h4>
+    <ul>
+        @foreach (var shop in ViewBag.Query5Result)
+        {
+            <li>@shop</li>
+        }
+    </ul>
+}
+
+<!-- Форма для Query6 -->
+<h3>Клієнти, які замовили всі товари з категорії X</h3>
+<form asp-action="Query6" method="post">
+    <label for="categoryName">Введіть назву категорії:</label>
+    <input type="text" id="categoryName" name="categoryName" required />
+    <button type="submit">Виконати</button>
+</form>
+@if (ViewBag.Query6Result != null)
+{
+    <h4>Результати для категорії @ViewBag.Query6CategoryName</h4>
+    <ul>
+        @foreach (var client in ViewBag.Query6Result)
+        {
+            <li>@client</li>
+        }
+    </ul>
+}
+
+<!-- Форма для Query7 -->
+<h3>Магазини, що продають ті самі товари, що й магазин X</h3>
+<form asp-action="Query7" method="post">
+    <label for="shopId">Введіть ID магазину:</label>
+    <input type="number" id="shopId" name="shopId" required />
+    <button type="submit">Виконати</button>
+</form>
+@if (ViewBag.Query7Result != null)
+{
+    <h4>Результати для магазину ID @ViewBag.Query7ShopId</h4>
+    <ul>
+        @foreach (var shop in ViewBag.Query7Result)
+        {
+            <li>@shop</li>
+        }
+    </ul>
+}
+
+<!-- Форма для Query8 -->
+<h3>Пари клієнтів, які замовили однакові товари</h3>
+<form asp-action="Query8" method="post">
+    <button type="submit">Виконати</button>
+</form>
+@if (ViewBag.Query8Result != null)
+{
+    <h4>Результати</h4>
+    <table>
+        <tr>
+            <th>Client1</th>
+            <th>Client2</th>
+        </tr>
+        @foreach (var pair in ViewBag.Query8Result)
+        {
+            <tr>
+                <td>@pair.Client1</td>
+                <td>@pair.Client2</td>
+            </tr>
+        }
+    </table>
+}

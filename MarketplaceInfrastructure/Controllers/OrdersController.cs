@@ -18,6 +18,7 @@ namespace MarketplaceInfrastructure.Controllers
         {
             _context = context;
         }
+        public DateTime? OrderDate { get; set; }
 
         // GET: Orders
         public async Task<IActionResult> Index()

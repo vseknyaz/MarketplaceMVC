@@ -9,8 +9,6 @@ public partial class Client
     public int ClientId { get; set; }
 
     public string? Email { get; set; }
-    [Required(ErrorMessage = "Адреса обов'язкова")]
-    [StringLength(200, ErrorMessage = "Адреса не може бути довшою за 200 символів")]
     public string PhoneNumber { get; set; } = null!;
 
     [Required(ErrorMessage = "Ім'я обов'язкове")]
