@@ -7,6 +7,7 @@ using System.Data.SqlClient;
 using Microsoft.Data.SqlClient;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using MarketplaceDomain.Model;
 
 namespace MarketplaceInfrastructure.Controllers
 {
@@ -76,6 +77,13 @@ namespace MarketplaceInfrastructure.Controllers
         [HttpPost]
         public IActionResult Query3(string categoryNameProducts)
         {
+            bool shopExists = _context.Categories.Any(s => s.CategoryName == categoryNameProducts);
+            if (!shopExists)
+            {
+                ViewBag.Query4Message = "Не знайдено такої категорії";
+                ViewBag.Query4Result = null;
+                return View("Index");
+            }
             var list = new List<string>();
             using var conn = new SqlConnection(_connString);
             using var cmd = conn.CreateCommand();
@@ -185,6 +193,14 @@ namespace MarketplaceInfrastructure.Controllers
         [HttpPost]
         public IActionResult Query7(int shopId)
         {
+            bool shopExists = _context.Shops.Any(s => s.ShopId == shopId);
+            if (!shopExists)
+            {
+                ViewBag.Query7Message = "Магазин з таким ID не знайдено.";
+                ViewBag.Query7Result = null;
+                return View("Index");
+            }
+
             var list = new List<string>();
             using var conn = new SqlConnection(_connString);
             using var cmd = conn.CreateCommand();
