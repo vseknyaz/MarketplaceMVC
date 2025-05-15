@@ -1,20 +1,26 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MarketplaceInfrastructure;
 using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace MarketplaceInfrastructure.Controllers
 {
     public class QueriesController : Controller
     {
         private readonly MarketplaceContext _context;
+        private readonly string _connString;
 
         public QueriesController(MarketplaceContext context)
         {
             _context = context;
+            _connString = _context.Database.GetDbConnection().ConnectionString;
         }
 
-        // GET: /Queries
         public IActionResult Index()
         {
             return View();
@@ -24,14 +30,22 @@ namespace MarketplaceInfrastructure.Controllers
         [HttpPost]
         public IActionResult Query1(decimal priceThreshold)
         {
-            var addresses = _context.Shops
-                .Where(s => s.Products.Any(p => p.Price > priceThreshold))
-                .Select(s => s.Address)
-                .Distinct()
-                .ToList();
+            var list = new List<string>();
+            using var conn = new SqlConnection(_connString);
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                SELECT DISTINCT s.Address
+                FROM Shops AS s
+                JOIN Products AS p ON s.ShopID = p.ShopID
+                WHERE p.Price > @price;
+            ";
+            cmd.Parameters.Add(new SqlParameter("@price", SqlDbType.Money) { Value = priceThreshold });
+            conn.Open();
+            using var r = cmd.ExecuteReader();
+            while (r.Read()) list.Add(r.GetString(0));
 
             ViewBag.PriceThreshold = priceThreshold;
-            ViewBag.Query1Result = addresses;
+            ViewBag.Query1Result = list;
             return View("Index");
         }
 
@@ -39,14 +53,22 @@ namespace MarketplaceInfrastructure.Controllers
         [HttpPost]
         public IActionResult Query2(DateTime orderDateAfter)
         {
-            var clients = _context.Clients
-                .Where(c => c.Orders.Any(o => o.OrderDate > orderDateAfter))
-                .Select(c => c.FullName)
-                .Distinct()
-                .ToList();
+            var list = new List<string>();
+            using var conn = new SqlConnection(_connString);
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                SELECT DISTINCT c.FullName
+                FROM Clients AS c
+                JOIN Orders AS o ON c.ClientID = o.ClientID
+                WHERE o.OrderDate > @date;
+            ";
+            cmd.Parameters.Add(new SqlParameter("@date", SqlDbType.DateTime) { Value = orderDateAfter });
+            conn.Open();
+            using var r = cmd.ExecuteReader();
+            while (r.Read()) list.Add(r.GetString(0));
 
             ViewBag.OrderDateAfter = orderDateAfter;
-            ViewBag.Query2Result = clients;
+            ViewBag.Query2Result = list;
             return View("Index");
         }
 
@@ -54,13 +76,21 @@ namespace MarketplaceInfrastructure.Controllers
         [HttpPost]
         public IActionResult Query3(string categoryNameProducts)
         {
-            var products = _context.Products
-                .Where(p => p.CategoryId == categoryNameProducts)
-                .Select(p => p.ProductName)
-                .ToList();
+            var list = new List<string>();
+            using var conn = new SqlConnection(_connString);
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                SELECT p.ProductName
+                FROM Products AS p
+                WHERE p.CategoryId = @cat;
+            ";
+            cmd.Parameters.Add(new SqlParameter("@cat", SqlDbType.NChar, 50) { Value = categoryNameProducts });
+            conn.Open();
+            using var r = cmd.ExecuteReader();
+            while (r.Read()) list.Add(r.GetString(0));
 
             ViewBag.CategoryNameProducts = categoryNameProducts;
-            ViewBag.Query3Result = products;
+            ViewBag.Query3Result = list;
             return View("Index");
         }
 
@@ -68,18 +98,29 @@ namespace MarketplaceInfrastructure.Controllers
         [HttpPost]
         public IActionResult Query4(int quantityThreshold)
         {
-            var orders = _context.OrderProducts
-                .GroupBy(op => op.OrderId)
-                .Select(g => new
+            var list = new List<dynamic>();
+            using var conn = new SqlConnection(_connString);
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                SELECT op.Order_ID, SUM(op.Quantity) AS TotalQuantity
+                FROM OrderProducts AS op
+                GROUP BY op.Order_ID
+                HAVING SUM(op.Quantity) > @qty;
+            ";
+            cmd.Parameters.Add(new SqlParameter("@qty", SqlDbType.Int) { Value = quantityThreshold });
+            conn.Open();
+            using var r = cmd.ExecuteReader();
+            while (r.Read())
+            {
+                list.Add(new
                 {
-                    OrderId = g.Key,
-                    TotalQuantity = g.Sum(op => op.Quantity)
-                })
-                .Where(x => x.TotalQuantity > quantityThreshold)
-                .ToList();
+                    OrderId = r.GetInt32(0),
+                    TotalQuantity = r.GetInt32(1)
+                });
+            }
 
             ViewBag.QuantityThreshold = quantityThreshold;
-            ViewBag.Query4Result = orders;
+            ViewBag.Query4Result = list;
             return View("Index");
         }
 
@@ -87,14 +128,23 @@ namespace MarketplaceInfrastructure.Controllers
         [HttpPost]
         public IActionResult Query5(int stockThreshold)
         {
-            var shops = _context.Shops
-                .Where(s => s.Products.Sum(p => p.Stock) < stockThreshold)
-                .Select(s => s.ShopName)
-                .Distinct()
-                .ToList();
+            var list = new List<string>();
+            using var conn = new SqlConnection(_connString);
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                SELECT DISTINCT s.ShopName
+                FROM Shops AS s
+                JOIN Products AS p ON s.ShopID = p.ShopID
+                GROUP BY s.ShopName, s.ShopID
+                HAVING SUM(p.Stock) < @stk;
+            ";
+            cmd.Parameters.Add(new SqlParameter("@stk", SqlDbType.Int) { Value = stockThreshold });
+            conn.Open();
+            using var r = cmd.ExecuteReader();
+            while (r.Read()) list.Add(r.GetString(0));
 
             ViewBag.StockThreshold = stockThreshold;
-            ViewBag.Query5Result = shops;
+            ViewBag.Query5Result = list;
             return View("Index");
         }
 
@@ -102,20 +152,32 @@ namespace MarketplaceInfrastructure.Controllers
         [HttpPost]
         public IActionResult Query6(string categoryNameClients)
         {
-            var productIds = _context.Products
-                .Where(p => p.CategoryId == categoryNameClients)
-                .Select(p => p.ProductId)
-                .ToList();
-
-            var clients = _context.Clients
-                .Where(c => productIds.All(pid =>
-                    c.Orders.SelectMany(o => o.OrderProducts)
-                     .Any(op => op.ProductId == pid)))
-                .Select(c => c.FullName)
-                .ToList();
+            var list = new List<string>();
+            using var conn = new SqlConnection(_connString);
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                SELECT c.FullName
+                FROM Clients AS c
+                WHERE NOT EXISTS (
+                    SELECT p.ProductID
+                    FROM Products AS p
+                    WHERE p.CategoryId = @cat
+                      AND NOT EXISTS (
+                          SELECT 1
+                          FROM Orders AS o
+                          JOIN OrderProducts AS op ON o.OrderID = op.Order_ID
+                          WHERE o.ClientID = c.ClientID
+                            AND op.Product_ID = p.ProductID
+                      )
+                );
+            ";
+            cmd.Parameters.Add(new SqlParameter("@cat", SqlDbType.NChar, 50) { Value = categoryNameClients });
+            conn.Open();
+            using var r = cmd.ExecuteReader();
+            while (r.Read()) list.Add(r.GetString(0));
 
             ViewBag.CategoryNameClients = categoryNameClients;
-            ViewBag.Query6Result = clients;
+            ViewBag.Query6Result = list;
             return View("Index");
         }
 
@@ -123,20 +185,42 @@ namespace MarketplaceInfrastructure.Controllers
         [HttpPost]
         public IActionResult Query7(int shopId)
         {
-            var baseIds = _context.Products
-                .Where(p => p.ShopId == shopId)
-                .Select(p => p.ProductId)
-                .ToList();
-
-            var shops = _context.Shops
-                .Where(s => s.ShopId != shopId
-                            && baseIds.All(id => s.Products.Select(p => p.ProductId).Contains(id))
-                            && s.Products.Select(p => p.ProductId).All(id => baseIds.Contains(id)))
-                .Select(s => s.ShopName)
-                .ToList();
+            var list = new List<string>();
+            using var conn = new SqlConnection(_connString);
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                WITH BaseProducts AS (
+                    SELECT ProductID
+                    FROM Products
+                    WHERE ShopID = @sid
+                )
+                SELECT s2.ShopName
+                FROM Shops AS s2
+                WHERE s2.ShopID <> @sid
+                  AND NOT EXISTS (
+                        SELECT bp.ProductID FROM BaseProducts AS bp
+                        WHERE NOT EXISTS (
+                            SELECT 1 FROM Products AS p2
+                            WHERE p2.ShopID = s2.ShopID
+                              AND p2.ProductID = bp.ProductID
+                        )
+                  )
+                  AND NOT EXISTS (
+                        SELECT p2.ProductID FROM Products AS p2
+                        WHERE p2.ShopID = s2.ShopID
+                          AND NOT EXISTS (
+                              SELECT 1 FROM BaseProducts
+                              WHERE ProductID = p2.ProductID
+                          )
+                  );
+            ";
+            cmd.Parameters.Add(new SqlParameter("@sid", SqlDbType.Int) { Value = shopId });
+            conn.Open();
+            using var r = cmd.ExecuteReader();
+            while (r.Read()) list.Add(r.GetString(0));
 
             ViewBag.ShopId = shopId;
-            ViewBag.Query7Result = shops;
+            ViewBag.Query7Result = list;
             return View("Index");
         }
 
@@ -144,25 +228,28 @@ namespace MarketplaceInfrastructure.Controllers
         [HttpPost]
         public IActionResult Query8()
         {
-            var pairs = (from c1 in _context.Clients
-                         from c2 in _context.Clients
-                         where c1.ClientId < c2.ClientId
-                            && _context.OrderProducts
-                                .Where(op => op.Order.ClientId == c1.ClientId)
-                                .Select(op => op.ProductId)
-                                .Intersect(
-                                    _context.OrderProducts
-                                        .Where(op => op.Order.ClientId == c2.ClientId)
-                                        .Select(op => op.ProductId)
-                                ).Any()
-                         select new
-                         {
-                             Client1 = c1.FullName,
-                             Client2 = c2.FullName
-                         })
-                        .ToList();
+            var list = new List<(string Client1, string Client2)>();
+            using var conn = new SqlConnection(_connString);
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = @"
+                SELECT c1.FullName, c2.FullName
+                FROM Clients AS c1
+                JOIN Clients AS c2 ON c1.ClientID < c2.ClientID
+                WHERE EXISTS (
+                    SELECT 1
+                    FROM Orders AS o1
+                    JOIN OrderProducts AS op1 ON o1.OrderID = op1.Order_ID
+                    JOIN Orders AS o2 ON o2.ClientID = c2.ClientID
+                    JOIN OrderProducts AS op2 ON o2.OrderID = op2.Order_ID
+                    WHERE o1.ClientID = c1.ClientID
+                      AND op1.Product_ID = op2.Product_ID
+                );
+            ";
+            conn.Open();
+            using var r = cmd.ExecuteReader();
+            while (r.Read()) list.Add((r.GetString(0), r.GetString(1)));
 
-            ViewBag.Query8Result = pairs;
+            ViewBag.Query8Result = list;
             return View("Index");
         }
     }
