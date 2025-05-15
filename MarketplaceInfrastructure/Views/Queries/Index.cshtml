@@ -1,10 +1,8 @@
-﻿@model YourNamespace.ViewModels.QueriesViewModel
-
-@{
+﻿@{
     ViewData["Title"] = "Запити";
 }
 
-<!-- Підключаємо Bootstrap 5 (якщо ще не підключено) -->
+<!-- Підключаємо Bootstrap 5 -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
       integrity="sha384-..." crossorigin="anonymous" />
@@ -16,7 +14,7 @@
 
     <div class="accordion" id="queriesAccordion">
 
-        @* 1. Адреси магазинів із товарами дорожче X *@
+        <!-- 1. Адреси магазинів із товарами дорожче X -->
         <div class="accordion-item">
             <h2 class="accordion-header" id="heading1">
                 <button class="accordion-button" type="button"
@@ -25,23 +23,26 @@
                     1. Адреси магазинів із товарами дорожче X
                 </button>
             </h2>
-            <div id="collapse1" class="accordion-collapse collapse show" aria-labelledby="heading1" data-bs-parent="#queriesAccordion">
+            <div id="collapse1" class="accordion-collapse collapse show"
+                 aria-labelledby="heading1" data-bs-parent="#queriesAccordion">
                 <div class="accordion-body">
                     <form asp-action="Query1" method="post" class="row g-2 align-items-end">
                         <div class="col-md-4">
-                            <label asp-for="PriceThreshold" class="form-label">Ціна, грн</label>
-                            <input asp-for="PriceThreshold" class="form-control" type="number" step="0.01" />
+                            <label for="priceThreshold" class="form-label">Ціна, грн</label>
+                            <input name="priceThreshold" id="priceThreshold"
+                                   class="form-control" type="number" step="0.01" required />
                         </div>
                         <div class="col-md-auto">
                             <button type="submit" class="btn btn-primary">Виконати</button>
                         </div>
                     </form>
-                    @if (Model.Query1Result is not null)
+
+                    @if (ViewBag.Query1Result != null)
                     {
                         <div class="mt-4">
-                            <h5>Магазини (ціна &gt; @Model.PriceThreshold)</h5>
+                            <h5>Магазини (ціна &gt; @ViewBag.PriceThreshold)</h5>
                             <ul class="list-group">
-                                @foreach (var addr in Model.Query1Result)
+                                @foreach (var addr in ViewBag.Query1Result)
                                 {
                                     <li class="list-group-item">@addr</li>
                                 }
@@ -52,7 +53,7 @@
             </div>
         </div>
 
-        @* 2. Клієнти, які зробили замовлення після дати X *@
+        <!-- 2. Клієнти, які зробили замовлення після дати X -->
         <div class="accordion-item">
             <h2 class="accordion-header" id="heading2">
                 <button class="accordion-button collapsed" type="button"
@@ -61,23 +62,26 @@
                     2. Клієнти, які зробили замовлення після дати X
                 </button>
             </h2>
-            <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="heading2" data-bs-parent="#queriesAccordion">
+            <div id="collapse2" class="accordion-collapse collapse"
+                 aria-labelledby="heading2" data-bs-parent="#queriesAccordion">
                 <div class="accordion-body">
                     <form asp-action="Query2" method="post" class="row g-2 align-items-end">
                         <div class="col-md-4">
-                            <label asp-for="OrderDateAfter" class="form-label">Дата</label>
-                            <input asp-for="OrderDateAfter" class="form-control" type="date" />
+                            <label for="orderDateAfter" class="form-label">Дата</label>
+                            <input name="orderDateAfter" id="orderDateAfter"
+                                   class="form-control" type="date" required />
                         </div>
                         <div class="col-md-auto">
                             <button type="submit" class="btn btn-primary">Виконати</button>
                         </div>
                     </form>
-                    @if (Model.Query2Result is not null)
+
+                    @if (ViewBag.Query2Result != null)
                     {
                         <div class="mt-4">
-                            <h5>Клієнти (після @Model.OrderDateAfter.Value.ToString("yyyy-MM-dd"))</h5>
+                            <h5>Клієнти (після @((DateTime)ViewBag.OrderDateAfter):yyyy-MM-dd)</h5>
                             <ul class="list-group">
-                                @foreach (var client in Model.Query2Result)
+                                @foreach (var client in ViewBag.Query2Result)
                                 {
                                     <li class="list-group-item">@client</li>
                                 }
@@ -88,7 +92,7 @@
             </div>
         </div>
 
-        @* 3. Товари з категорії X *@
+        <!-- 3. Товари з категорії X -->
         <div class="accordion-item">
             <h2 class="accordion-header" id="heading3">
                 <button class="accordion-button collapsed" type="button"
@@ -97,23 +101,26 @@
                     3. Товари з категорії X
                 </button>
             </h2>
-            <div id="collapse3" class="accordion-collapse collapse" aria-labelledby="heading3" data-bs-parent="#queriesAccordion">
+            <div id="collapse3" class="accordion-collapse collapse"
+                 aria-labelledby="heading3" data-bs-parent="#queriesAccordion">
                 <div class="accordion-body">
                     <form asp-action="Query3" method="post" class="row g-2 align-items-end">
                         <div class="col-md-4">
-                            <label asp-for="CategoryNameProducts" class="form-label">Категорія</label>
-                            <input asp-for="CategoryNameProducts" class="form-control" />
+                            <label for="categoryNameProducts" class="form-label">Категорія</label>
+                            <input name="categoryNameProducts" id="categoryNameProducts"
+                                   class="form-control" type="text" required />
                         </div>
                         <div class="col-md-auto">
                             <button type="submit" class="btn btn-primary">Виконати</button>
                         </div>
                     </form>
-                    @if (Model.Query3Result is not null)
+
+                    @if (ViewBag.Query3Result != null)
                     {
                         <div class="mt-4">
-                            <h5>Продукти (@Model.CategoryNameProducts)</h5>
+                            <h5>Продукти (@ViewBag.CategoryNameProducts)</h5>
                             <ul class="list-group">
-                                @foreach (var prod in Model.Query3Result)
+                                @foreach (var prod in ViewBag.Query3Result)
                                 {
                                     <li class="list-group-item">@prod</li>
                                 }
@@ -124,7 +131,7 @@
             </div>
         </div>
 
-        @* 4. Замовлення з кількістю товарів більше X *@
+        <!-- 4. Замовлення з кількістю товарів більше X -->
         <div class="accordion-item">
             <h2 class="accordion-header" id="heading4">
                 <button class="accordion-button collapsed" type="button"
@@ -133,21 +140,24 @@
                     4. Замовлення з кількістю товарів більше X
                 </button>
             </h2>
-            <div id="collapse4" class="accordion-collapse collapse" aria-labelledby="heading4" data-bs-parent="#queriesAccordion">
+            <div id="collapse4" class="accordion-collapse collapse"
+                 aria-labelledby="heading4" data-bs-parent="#queriesAccordion">
                 <div class="accordion-body">
                     <form asp-action="Query4" method="post" class="row g-2 align-items-end">
                         <div class="col-md-4">
-                            <label asp-for="QuantityThreshold" class="form-label">Кількість</label>
-                            <input asp-for="QuantityThreshold" class="form-control" type="number" />
+                            <label for="quantityThreshold" class="form-label">Кількість</label>
+                            <input name="quantityThreshold" id="quantityThreshold"
+                                   class="form-control" type="number" required />
                         </div>
                         <div class="col-md-auto">
                             <button type="submit" class="btn btn-primary">Виконати</button>
                         </div>
                     </form>
-                    @if (Model.Query4Result is not null)
+
+                    @if (ViewBag.Query4Result != null)
                     {
                         <div class="mt-4">
-                            <h5>Замовлення (кількість &gt; @Model.QuantityThreshold)</h5>
+                            <h5>Замовлення (кількість &gt; @ViewBag.QuantityThreshold)</h5>
                             <table class="table table-striped table-hover">
                                 <thead>
                                     <tr>
@@ -156,7 +166,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var o in Model.Query4Result)
+                                    @foreach (var o in ViewBag.Query4Result)
                                     {
                                         <tr>
                                             <td>@o.OrderId</td>
@@ -171,7 +181,7 @@
             </div>
         </div>
 
-        @* 5. Магазини з товарами на складі менше X *@
+        <!-- 5. Магазини з товарами на складі менше X -->
         <div class="accordion-item">
             <h2 class="accordion-header" id="heading5">
                 <button class="accordion-button collapsed" type="button"
@@ -180,23 +190,26 @@
                     5. Магазини з товарами на складі менше X
                 </button>
             </h2>
-            <div id="collapse5" class="accordion-collapse collapse" aria-labelledby="heading5" data-bs-parent="#queriesAccordion">
+            <div id="collapse5" class="accordion-collapse collapse"
+                 aria-labelledby="heading5" data-bs-parent="#queriesAccordion">
                 <div class="accordion-body">
                     <form asp-action="Query5" method="post" class="row g-2 align-items-end">
                         <div class="col-md-4">
-                            <label asp-for="StockThreshold" class="form-label">Запас</label>
-                            <input asp-for="StockThreshold" class="form-control" type="number" />
+                            <label for="stockThreshold" class="form-label">Запас</label>
+                            <input name="stockThreshold" id="stockThreshold"
+                                   class="form-control" type="number" required />
                         </div>
                         <div class="col-md-auto">
                             <button type="submit" class="btn btn-primary">Виконати</button>
                         </div>
                     </form>
-                    @if (Model.Query5Result is not null)
+
+                    @if (ViewBag.Query5Result != null)
                     {
                         <div class="mt-4">
-                            <h5>Магазини (запас &lt; @Model.StockThreshold)</h5>
+                            <h5>Магазини (запас &lt; @ViewBag.StockThreshold)</h5>
                             <ul class="list-group">
-                                @foreach (var shop in Model.Query5Result)
+                                @foreach (var shop in ViewBag.Query5Result)
                                 {
                                     <li class="list-group-item">@shop</li>
                                 }
@@ -207,7 +220,7 @@
             </div>
         </div>
 
-        @* 6. Клієнти, які замовили всі товари з категорії X *@
+        <!-- 6. Клієнти, які замовили всі товари з категорії X -->
         <div class="accordion-item">
             <h2 class="accordion-header" id="heading6">
                 <button class="accordion-button collapsed" type="button"
@@ -216,23 +229,26 @@
                     6. Клієнти, які замовили всі товари з категорії X
                 </button>
             </h2>
-            <div id="collapse6" class="accordion-collapse collapse" aria-labelledby="heading6" data-bs-parent="#queriesAccordion">
+            <div id="collapse6" class="accordion-collapse collapse"
+                 aria-labelledby="heading6" data-bs-parent="#queriesAccordion">
                 <div class="accordion-body">
                     <form asp-action="Query6" method="post" class="row g-2 align-items-end">
                         <div class="col-md-4">
-                            <label asp-for="CategoryNameClients" class="form-label">Категорія</label>
-                            <input asp-for="CategoryNameClients" class="form-control" />
+                            <label for="categoryNameClients" class="form-label">Категорія</label>
+                            <input name="categoryNameClients" id="categoryNameClients"
+                                   class="form-control" type="text" required />
                         </div>
                         <div class="col-md-auto">
                             <button type="submit" class="btn btn-primary">Виконати</button>
                         </div>
                     </form>
-                    @if (Model.Query6Result is not null)
+
+                    @if (ViewBag.Query6Result != null)
                     {
                         <div class="mt-4">
-                            <h5>Клієнти (@Model.CategoryNameClients)</h5>
+                            <h5>Клієнти (@ViewBag.CategoryNameClients)</h5>
                             <ul class="list-group">
-                                @foreach (var client in Model.Query6Result)
+                                @foreach (var client in ViewBag.Query6Result)
                                 {
                                     <li class="list-group-item">@client</li>
                                 }
@@ -243,7 +259,7 @@
             </div>
         </div>
 
-        @* 7. Магазини, що продають ті самі товари, що й магазин X *@
+        <!-- 7. Магазини, що продають ті самі товари, що й магазин X -->
         <div class="accordion-item">
             <h2 class="accordion-header" id="heading7">
                 <button class="accordion-button collapsed" type="button"
@@ -252,23 +268,26 @@
                     7. Магазини, що продають ті самі товари, що й магазин X
                 </button>
             </h2>
-            <div id="collapse7" class="accordion-collapse collapse" aria-labelledby="heading7" data-bs-parent="#queriesAccordion">
+            <div id="collapse7" class="accordion-collapse collapse"
+                 aria-labelledby="heading7" data-bs-parent="#queriesAccordion">
                 <div class="accordion-body">
                     <form asp-action="Query7" method="post" class="row g-2 align-items-end">
                         <div class="col-md-4">
-                            <label asp-for="ShopId" class="form-label">ID магазину</label>
-                            <input asp-for="ShopId" class="form-control" type="number" />
+                            <label for="shopId" class="form-label">ID магазину</label>
+                            <input name="shopId" id="shopId"
+                                   class="form-control" type="number" required />
                         </div>
                         <div class="col-md-auto">
                             <button type="submit" class="btn btn-primary">Виконати</button>
                         </div>
                     </form>
-                    @if (Model.Query7Result is not null)
+
+                    @if (ViewBag.Query7Result != null)
                     {
                         <div class="mt-4">
-                            <h5>Магазини (подібні до @Model.ShopId)</h5>
+                            <h5>Магазини (подібні до @ViewBag.ShopId)</h5>
                             <ul class="list-group">
-                                @foreach (var shop in Model.Query7Result)
+                                @foreach (var shop in ViewBag.Query7Result)
                                 {
                                     <li class="list-group-item">@shop</li>
                                 }
@@ -279,7 +298,7 @@
             </div>
         </div>
 
-        @* 8. Пари клієнтів, які замовили однакові товари *@
+        <!-- 8. Пари клієнтів, які замовили однакові товари -->
         <div class="accordion-item">
             <h2 class="accordion-header" id="heading8">
                 <button class="accordion-button collapsed" type="button"
@@ -288,12 +307,14 @@
                     8. Пари клієнтів, які замовили однакові товари
                 </button>
             </h2>
-            <div id="collapse8" class="accordion-collapse collapse" aria-labelledby="heading8" data-bs-parent="#queriesAccordion">
+            <div id="collapse8" class="accordion-collapse collapse"
+                 aria-labelledby="heading8" data-bs-parent="#queriesAccordion">
                 <div class="accordion-body">
                     <form asp-action="Query8" method="post">
                         <button type="submit" class="btn btn-primary">Виконати</button>
                     </form>
-                    @if (Model.Query8Result is not null)
+
+                    @if (ViewBag.Query8Result != null)
                     {
                         <div class="mt-4">
                             <h5>Пари клієнтів</h5>
@@ -305,7 +326,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var pair in Model.Query8Result)
+                                    @foreach (var pair in ViewBag.Query8Result)
                                     {
                                         <tr>
                                             <td>@pair.Client1</td>
