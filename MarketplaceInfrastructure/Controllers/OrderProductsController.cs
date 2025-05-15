@@ -86,7 +86,7 @@ namespace MarketplaceInfrastructure.Controllers
                 return NotFound();
             }
             ViewData["OrderId"] = new SelectList(_context.Orders, "OrderId", "OrderId", orderProduct.OrderId);
-            ViewData["ProductId"] = new SelectList(_context.Products, "ProductId", "CategoryId", orderProduct.ProductId);
+            ViewData["ProductId"] = new SelectList(_context.Products, "ProductId","ProductName", orderProduct.ProductId);
             return View(orderProduct);
         }
 

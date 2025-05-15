@@ -147,26 +147,17 @@ namespace MarketplaceInfrastructure.Controllers
             var result = (from c1 in _context.Clients
                           from c2 in _context.Clients
                           where c1.ClientId < c2.ClientId
-                          && !_context.Orders
+                          && _context.Orders
                               .Join(_context.OrderProducts, o => o.OrderId, op => op.OrderId, (o, op) => new { o, op })
                               .Where(x => x.o.ClientId == c1.ClientId)
                               .Select(x => x.op.ProductId)
-                              .Except(_context.Orders
+                              .Intersect(_context.Orders
                                   .Join(_context.OrderProducts, o => o.OrderId, op => op.OrderId, (o, op) => new { o, op })
                                   .Where(x => x.o.ClientId == c2.ClientId)
                                   .Select(x => x.op.ProductId))
                               .Any()
-                          && !_context.Orders
-                              .Join(_context.OrderProducts, o => o.OrderId, op => op.OrderId, (o, op) => new { o, op })
-                              .Where(x => x.o.ClientId == c2.ClientId)
-                              .Select(x => x.op.ProductId)
-                              .Except(_context.Orders
-                                  .Join(_context.OrderProducts, o => o.OrderId, op => op.OrderId, (o, op) => new { o, op })
-                                  .Where(x => x.o.ClientId == c1.ClientId)
-                                  .Select(x => x.op.ProductId))
-                              .Any()
                           select new { Client1 = c1.FullName, Client2 = c2.FullName })
-                         .ToList();
+             .ToList();
             ViewBag.Query8Result = result;
             return View("Index");
         }
